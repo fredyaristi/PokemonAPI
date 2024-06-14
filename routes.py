@@ -3,11 +3,11 @@ from flask_jwt_extended import JWTManager, jwt_required
 from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError
 import logging
 from pokemon_controller import get_pokemon_by_name, list_all_pokemons, get_random_pokemon_by_type, get_longest_name_pokemon_by_type, save_pokemons_to_bd
-from user_controller import get_user, login_user
+from user_controller import login_user
 from secure import encrypt_password, generate_token
 
 app = Flask(__name__)
-
+#Inicializa en la app la librería para administrar los token JWT
 jwt = JWTManager(app)
 
 @app.route('/pokemon/', methods=['GET'])
@@ -42,17 +42,22 @@ def get_pokemon_from_pokeapi():
 
 @app.route('/login', methods=['POST'])
 def login():
+    #Obtiene los datos enviados en el body para la autenticación
     req = request.json
     username = req.get('username')
     password = req.get('password')
 
+    #Valida si se recibió parámetros de autenticación
     if not username or not password:
         logging.error(f"Login error. Both user and pass are required")
         return jsonify({'error': 'Username and password are required'}), 400
     
+    #Invoca método que consulta los datos del usuario en la BD
     data = login_user(username)
+    #Aplica hash a la contraseña entregada para compararla con la almacenada en la BD
     password_hash = encrypt_password(password)
     if data['password'] == password_hash:
+        #Si la autenticación es válida, invoca método para generar el token y retornarlo al usuario en el header
         token = generate_token(username)
         response = make_response(jsonify({'message': 'Login successful'}), 201)
         response.headers['Authorization'] = 'Bearer ' + token
@@ -61,13 +66,16 @@ def login():
     logging.error(f"Login error. User or pass are not valid")
     return jsonify({'error': 'Invalid username or password'}), 401
 
+'''
+#Método para mostrar los usuarios creados en la BD. Solo demostrativo
 @app.route('/users/', methods=['GET'])
 @jwt_required()
 def show_user():
     result = get_user()
     return result
+'''
 
-
+## Manejo de errores relacionados con el token
 @jwt.unauthorized_loader
 def custom_unauthorized_response(callback):
     return jsonify({

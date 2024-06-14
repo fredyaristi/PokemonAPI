@@ -4,7 +4,8 @@ import logging
 from database import get_db
 
 load_dotenv()
-
+'''
+#Método para consultar usuarios de la BD. Solo demostrativo
 def get_user():
     try:
         db = get_db()
@@ -14,7 +15,9 @@ def get_user():
     except Exception as e:
         logging.error(f"Error fetching all users (get_user): {e}")
         return jsonify({'error': 'Error fetching users from DB'}), 500
+'''
 
+#Consultar un usuario en la BD segun su username
 def login_user(username):
     try:
         db = get_db()
